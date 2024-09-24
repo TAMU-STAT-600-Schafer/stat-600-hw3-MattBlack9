@@ -13,6 +13,8 @@ Yt <- letter_test[, 1]
 Xt <- as.matrix(letter_test[, -1])
 
 # [ToDo] Make sure to add column for an intercept to X and Xt
+X <- cbind(1, X)
+Xt <- cbind(1, Xt)
 
 # Source the LR function
 source("FunctionsLR.R")
@@ -28,6 +30,7 @@ plot(out$error_test, type = 'o')
 # Feel free to modify the code above for different lambda/eta/numIter values to see how it affects the convergence as well as train/test errors
 
 # [ToDo] Use microbenchmark to time your code with lambda=1 and 50 iterations. To save time, only apply microbenchmark 5 times.
+library(microbenchmark)
 
 # [ToDo] Report the median time of your code from microbenchmark above in the comments below
 

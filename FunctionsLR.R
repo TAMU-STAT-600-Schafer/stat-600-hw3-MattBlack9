@@ -20,6 +20,12 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   ## Check the supplied parameters as described. You can assume that X, Xt are matrices; y, yt are vectors; and numIter, eta, lambda are scalars. You can assume that beta_init is either NULL (default) or a matrix.
   ###################################
   # Check that the first column of X and Xt are 1s, if not - display appropriate message and stop execution.
+  if(sum(X[, 1]) != nrow(X)){
+    stop("First column of X is not 1s")
+  }
+  else{
+    stop("Working")
+  }
   
   # Check for compatibility of dimensions between X and Y
   

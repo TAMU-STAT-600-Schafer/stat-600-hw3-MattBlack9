@@ -27,16 +27,32 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   } 
   
   # Check for compatibility of dimensions between X and Y
+  if(nrow(X) != length(Y)){
+    stop("Number of rows X does not match length of Y")
+  }
   
   # Check for compatibility of dimensions between Xt and Yt
+  if(nrow(Xt) != length(Yt)){
+    stop("Number of rows of Xt does not match length of Yt")
+  }
   
   # Check for compatibility of dimensions between X and Xt
+  if(ncol(X) != ncol(Xt)){
+    stop("Number of columns of X and Xt do not match")
+  }
   
   # Check eta is positive
+  if(eta > 0){
+    stop("eta needs to be positive")
+  }
   
   # Check lambda is non-negative
+  if(lambda >= 0){
+    stop("lambda needs to be positive")
+  }
   
   # Check whether beta_init is NULL. If NULL, initialize beta with p x K matrix of zeroes. If not NULL, check for compatibility of dimensions with what has been already supplied.
+  
   
   ## Calculate corresponding pk, objective value f(beta_init), training error and testing error given the starting point beta_init
   ##########################################################################

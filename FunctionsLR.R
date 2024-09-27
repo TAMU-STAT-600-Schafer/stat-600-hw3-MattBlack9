@@ -42,29 +42,38 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   }
   
   # Check eta is positive
-  if(eta > 0){
+  if(eta <= 0){
     stop("eta needs to be positive")
   }
   
   # Check lambda is non-negative
-  if(lambda >= 0){
-    stop("lambda needs to be positive")
+  if(lambda < 0){
+    stop("lambda needs to be non-negative")
   }
   
   # Check whether beta_init is NULL. If NULL, initialize beta with p x K matrix of zeroes. If not NULL, check for compatibility of dimensions with what has been already supplied.
   if(is.null(beta_init)){
     beta_init <- matrix(0, nrow = ncol(X), ncol = sort(unique(Y))[length(unique(Y))])
+    return(beta_init)
   } else if(array(dim(beta_init)) != array(c(nrow(X, length(unique(Y)))))){
     stop("Dimension of beta_init needs to be n \u00D7 p")
   }
   
-  ## Calculate corresponding pk, objective value f(beta_init), training error and testing error given the starting point beta_init
+  ## Calculate corresponding pk, objective value f(beta_init), training error and 
+  ## testing error given the starting point beta_init
   ##########################################################################
+  n <- nrow(X)
+  p <- ncol(X)
+  pk <- exp()
   
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
   ##########################################################################
- 
-  # Within one iteration: perform the update, calculate updated objective function and training/testing errors in %
+  for(i in 1:numIter){
+    
+  }
+  
+  # Within one iteration: perform the update, calculate updated objective function 
+  ## and training/testing errors in %
   
   
   ## Return output
@@ -75,3 +84,6 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   # objective - (numIter + 1) length vector of objective values of the function that we are minimizing at each iteration (+ starting value)
   return(list(beta = beta, error_train = error_train, error_test = error_test, objective =  objective))
 }
+
+
+

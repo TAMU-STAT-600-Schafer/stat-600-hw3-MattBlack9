@@ -64,12 +64,15 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   ##########################################################################
   n <- nrow(X)
   p <- ncol(X)
+  K <- length(unique(Y))
   pk <- exp(X %*% beta_init) / rowSums(exp(X %*% beta_init))
+  beta <- matrix(nrow = p, ncol = K)
+  beta <- beta_init
   
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
   ##########################################################################
   for(i in 1:numIter){
-    
+    beta_new <- beta - eta * (t(X) %*% X + lambda %*% diag(1, nrow = n, ncol = n))^-1 %*% (t(X) + lambda * beta)
   }
   
   # Within one iteration: perform the update, calculate updated objective function 

@@ -21,9 +21,9 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   ###################################
   # Check that the first column of X and Xt are 1s, if not - display appropriate message and stop execution.
   if(sum(X[, 1]) != nrow(X)){
-    stop("First column of X is not 1s")
+    stop("First column of X is not 1's")
   } else if(sum(Xt[, 1]) != nrow(Xt)){
-    stop("First column of Xt is not 1s")
+    stop("First column of Xt is not 1's")
   } 
   
   # Check for compatibility of dimensions between X and Y
@@ -64,7 +64,7 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   ##########################################################################
   n <- nrow(X)
   p <- ncol(X)
-  pk <- exp()
+  pk <- exp(X %*% beta_init) / rowSums(exp(X %*% beta_init))
   
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
   ##########################################################################

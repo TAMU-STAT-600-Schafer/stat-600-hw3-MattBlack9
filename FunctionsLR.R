@@ -1,3 +1,16 @@
+log_prob <- function(X, beta){
+  pk <- exp(X %*% beta) / rowSums(exp(X %*% beta))
+  return(pk)
+}
+
+beta_update <- function(X, Pmatrix, eta, beta, lambda, n){
+  new_beta <- beta - eta * solve(t(X) %*% diag(Pmatrix*(1 - Pmatrix), nrow = n, ncol = n) %*% X + 
+                       lambda*diag(1, nrow = n, ncol + n)) %*% (t(X) %*% (Pmatrix - 1) + lambda * beta)
+  return(new_beta)
+}
+
+
+
 # Function that implements multi-class logistic regression.
 #############################################################
 # Description of supplied parameters:
@@ -65,9 +78,28 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   n <- nrow(X)
   p <- ncol(X)
   K <- length(unique(Y))
-  pk <- exp(X %*% beta_init) / rowSums(exp(X %*% beta_init))
+  
   beta <- matrix(nrow = p, ncol = K)
   beta <- beta_init
+  
+  Pmatrix <- c()
+  
+  fbeta <- ((lambda / 2) * sum(beta^2))
+  for(i in 1:n){
+    for(j in 1:K-1){
+      if(Y[i] == j){
+        Pmatrix[i] <- log_prob(X[i], beta)
+        fbeta <- fbeta - log_prob(X[i], beta)
+      }
+    }
+  }
+  
+  
+  
+  
+  
+  pk <- exp(X %*% beta_init) / rowSums(exp(X %*% beta_init))
+  fbeta <- -sum(log(pk)) + ((lambda / 2) * sum(beta^2))
   
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
   ##########################################################################

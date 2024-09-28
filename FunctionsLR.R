@@ -1,15 +1,19 @@
-log_prob <- function(X, beta){
+prob_assign <- function(X, beta){
   pk <- exp(X %*% beta) / rowSums(exp(X %*% beta))
   return(pk)
 }
 
-beta_update <- function(X, Pmatrix, eta, beta, lambda, n){
-  new_beta <- beta - eta * solve(t(X) %*% diag(Pmatrix*(1 - Pmatrix), nrow = n, ncol = n) %*% X + 
-                       lambda*diag(1, nrow = n, ncol + n)) %*% (t(X) %*% (Pmatrix - 1) + lambda * beta)
+beta_update <- function(X, Pk, eta, beta, lambda, n, y, const){
+  new_beta <- beta - eta * solve(t(X) %*% diag(Pk * (1 - Pk)) %*% X + lambda * diag(ncol(X))) %*% 
+    t(X) %*% (Pk - as.numeric(y == const)) + lambda * beta 
   return(new_beta)
 }
 
-
+error_calc <- function(X, beta, y) {
+  pk <- prob_assign(X, beta)
+  y_pred <- apply(pk, 1, which.max) - 1
+  return(mean(y_pred != y) * 100)
+}
 
 # Function that implements multi-class logistic regression.
 #############################################################
@@ -40,13 +44,13 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   } 
   
   # Check for compatibility of dimensions between X and Y
-  if(nrow(X) != length(Y)){
-    stop("Number of rows X does not match length of Y")
+  if(nrow(X) != length(y)){
+    stop("Number of rows X does not match length of y")
   }
   
   # Check for compatibility of dimensions between Xt and Yt
-  if(nrow(Xt) != length(Yt)){
-    stop("Number of rows of Xt does not match length of Yt")
+  if(nrow(Xt) != length(yt)){
+    stop("Number of rows of Xt does not match length of yt")
   }
   
   # Check for compatibility of dimensions between X and Xt
@@ -66,9 +70,8 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   
   # Check whether beta_init is NULL. If NULL, initialize beta with p x K matrix of zeroes. If not NULL, check for compatibility of dimensions with what has been already supplied.
   if(is.null(beta_init)){
-    beta_init <- matrix(0, nrow = ncol(X), ncol = sort(unique(Y))[length(unique(Y))])
-    return(beta_init)
-  } else if(array(dim(beta_init)) != array(c(nrow(X, length(unique(Y)))))){
+    beta_init <- matrix(0, nrow = ncol(X), ncol = length(unique(y)))
+  } else if(array(dim(beta_init)) != array(c(nrow(X, length(unique(y)))))){
     stop("Dimension of beta_init needs to be n \u00D7 p")
   }
   
@@ -77,36 +80,31 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   ##########################################################################
   n <- nrow(X)
   p <- ncol(X)
-  K <- length(unique(Y))
+  K <- length(unique(y))
   
-  beta <- matrix(nrow = p, ncol = K)
   beta <- beta_init
+  objective <- c()
+  error_train <- c()
+  error_test <- c()
   
-  Pmatrix <- c()
-  
-  fbeta <- ((lambda / 2) * sum(beta^2))
-  for(i in 1:n){
-    for(j in 1:K-1){
-      if(Y[i] == j){
-        Pmatrix[i] <- log_prob(X[i], beta)
-        fbeta <- fbeta - log_prob(X[i], beta)
-      }
+  for(i in 1:numIter){
+    pk <- prob_assign(X,beta)
+    fbeta <- 0
+    for(k in 0:(K-1)){
+      beta[ , k + 1] <- beta_update(X, pk[ ,k + 1], eta, beta[ , k + 1], lambda, n, y, k+1)
+      fbeta <- fbeta - sum(as.numeric(Y == k+1) * log(pk[,  k + 1] + 1e-10)) + ((lambda / 2) * crossprod(beta[ , k + 1]))
     }
+    objective[i] <- fbeta
+    error_train[i] <- error_calc(X, beta, Y)
+    error_test[i] <- error_calc(Xt, beta, Yt)
   }
   
   
   
   
-  
-  pk <- exp(X %*% beta_init) / rowSums(exp(X %*% beta_init))
-  fbeta <- -sum(log(pk)) + ((lambda / 2) * sum(beta^2))
   
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
   ##########################################################################
-  for(i in 1:numIter){
-    beta_new <- beta - eta * (t(X) %*% X + lambda %*% diag(1, nrow = n, ncol = n))^-1 %*% (t(X) + lambda * beta)
-  }
-  
   # Within one iteration: perform the update, calculate updated objective function 
   ## and training/testing errors in %
   

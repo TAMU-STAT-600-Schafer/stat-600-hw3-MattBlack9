@@ -3,10 +3,10 @@ prob_assign <- function(X, beta){
   return(pk)
 }
 
-beta_update <- function(X, Pk, eta, beta, lambda, n, y, const){
-  new_beta <- beta - eta * solve(t(X) %*% diag(Pk * (1 - Pk)) %*% X + lambda * diag(ncol(X))) %*% 
-    t(X) %*% (Pk - as.numeric(y == const)) + lambda * beta 
-  return(new_beta)
+fbeta_calc <- function(X, y, beta, lambda){
+  pk <- prob_assign(X, beta)
+  objective <- -sum(log(pk[cbind(1:nrow(X), y + 1)]))  + (lambda / 2) * sum(beta^2)
+  return(objective)
 }
 
 error_calc <- function(X, beta, y) {
@@ -87,18 +87,10 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   error_train <- c()
   error_test <- c()
   
-  for(i in 1:numIter){
-    pk <- prob_assign(X,beta)
-    fbeta <- 0
-    for(k in 0:(K-1)){
-      beta[ , k + 1] <- beta_update(X, pk[ ,k + 1], eta, beta[ , k + 1], lambda, n, y, k+1)
-      fbeta <- fbeta - sum(as.numeric(Y == k+1) * log(pk[,  k + 1] + 1e-10)) + ((lambda / 2) * crossprod(beta[ , k + 1]))
-    }
-    objective[i] <- fbeta
-    error_train[i] <- error_calc(X, beta, Y)
-    error_test[i] <- error_calc(Xt, beta, Yt)
-  }
-  
+  pk <- prob_assign(X,beta)
+  objective[1] <- fbeta_calc(X, y, beta, lambda)
+  error_train[1] <- error_calc(X, beta, Y)
+  error_test[1] <- error_calc(Xt, beta, Yt)
   
   
   
@@ -107,6 +99,18 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   ##########################################################################
   # Within one iteration: perform the update, calculate updated objective function 
   ## and training/testing errors in %
+  for(i in 1:numIter){
+    pk <- prob_assign(X,beta)
+    for(k in 0:(K-1)){
+      beta[, k + 1] <- beta[, k + 1] - eta * solve(t(X) %*% diag(pk[, k+1] * (1 - pk[, k+1])) %*% X + lambda * diag(p)) %*% (t(X) %*% (pk[, k+1] - as.numeric(y == k)) + lambda * beta[, k + 1])
+    }
+    
+    if(i > 1){
+      objective[i] <- fbeta_calc(X, y, beta, lambda)
+      error_train[i] <- error_calc(X, beta, Y)
+      error_test[i] <- error_calc(Xt, beta, Yt)
+    }
+  }
   
   
   ## Return output

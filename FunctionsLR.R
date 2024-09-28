@@ -11,7 +11,7 @@ fbeta_calc <- function(X, y, beta, lambda){
 
 error_calc <- function(X, beta, y) {
   pk <- prob_assign(X, beta)
-  y_pred <- apply(pk, 1, which.max) - 1
+  y_pred <- max.col(pk) - 1
   return(mean(y_pred != y) * 100)
 }
 

@@ -33,6 +33,8 @@ plot(out$error_test, type = 'o')
 # [ToDo] Use microbenchmark to time your code with lambda=1 and 50 iterations. To save time, only apply microbenchmark 5 times.
 library(microbenchmark)
 
+
 # [ToDo] Report the median time of your code from microbenchmark above in the comments below
+microbenchmark(LRMultiClass(X, Y, Xt, Yt, lambda = 1, numIter = 50), times = 5)
 
 # Median time:  (in sec)

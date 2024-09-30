@@ -1,5 +1,5 @@
 prob_assign <- function(X, beta){
-  pk <- exp(X %*% beta) / rowSums(exp(X %*% beta))
+  pk <- exp(crossprod(t(X), beta)) / rowSums(exp(crossprod(t(X),beta)))
   return(pk)
 }
 
@@ -81,15 +81,15 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   n <- nrow(X)
   p <- ncol(X)
   K <- length(unique(y))
+  diag_mat <- lambda * diag(1, p, p)
   
   beta <- beta_init
   objective <- c()
   error_train <- c()
   error_test <- c()
   
-  pk <- prob_assign(X,beta)
   objective[1] <- fbeta_calc(X, y, beta, lambda)
-  error_train[1] <- error_calc(X, beta, Y)
+  error_train[1] <- error_calc(X, beta, y)
   error_test[1] <- error_calc(Xt, beta, Yt)
   
   
@@ -101,14 +101,16 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = 1, beta
   ## and training/testing errors in %
   for(i in 1:numIter){
     pk <- prob_assign(X,beta)
+    W <- eta * solve((t(X) * diag(pk * (1 - pk))) %*% X + diag_mat)
+    
     for(k in 0:(K-1)){
-      beta[, k + 1] <- beta[, k + 1] - eta * solve(t(X) %*% diag(pk[, k+1] * (1 - pk[, k+1])) %*% X + lambda * diag(p)) %*% (t(X) %*% (pk[, k+1] - as.numeric(y == k)) + lambda * beta[, k + 1])
+      beta[, k + 1] <- beta[, k + 1] - W %*% (crossprod(X, (pk[, k + 1] - as.numeric(y == k))) + lambda * beta[, k + 1])
     }
     
     if(i > 1){
       objective[i] <- fbeta_calc(X, y, beta, lambda)
-      error_train[i] <- error_calc(X, beta, Y)
-      error_test[i] <- error_calc(Xt, beta, Yt)
+      error_train[i] <- error_calc(X, beta, y)
+      error_test[i] <- error_calc(Xt, beta, yt)
     }
   }
   

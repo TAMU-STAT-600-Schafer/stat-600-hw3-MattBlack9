@@ -36,3 +36,12 @@ LRMultiClass(d1, a1, d1, a1, beta_init = b1)
 
 
 
+
+
+
+
+
+
+
+
+
